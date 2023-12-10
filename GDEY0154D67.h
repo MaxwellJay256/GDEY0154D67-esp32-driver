@@ -11,8 +11,7 @@
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "GDEY0154D67_spi.h"
 
 #define GDEY0154D67_WIDTH 200
 #define GDEY0154D67_HEIGHT 200
