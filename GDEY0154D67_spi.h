@@ -1,3 +1,8 @@
+/**
+ * @file GDEY0154D67_spi.h
+ * @brief GDEY0154D67 spi driver header file
+ * @version 0.1
+ */
 #ifndef _GDEY0154D67_SPI_H_
 #define _GDEY0154D67_SPI_H_
 

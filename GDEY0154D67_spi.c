@@ -1,3 +1,8 @@
+/**
+ * @file GDEY0154D67_spi.c
+ * @brief GDEY0154D67 spi driver source file
+ * @version 0.1
+ */
 #include "GDEY0154D67.h"
 
 static const char *TAG = "GDEY0154D67_spi";
