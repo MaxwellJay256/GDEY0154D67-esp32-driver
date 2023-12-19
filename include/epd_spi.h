@@ -1,7 +1,7 @@
 /**
  * @file epd_spi.h
  * @brief GDEY0154D67 spi driver header file
- * @version 0.1
+ * @version 1.0
  */
 #ifndef _SPI_H_
 #define _SPI_H_

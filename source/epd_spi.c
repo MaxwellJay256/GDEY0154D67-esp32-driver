@@ -1,7 +1,7 @@
 /**
  * @file epd_spi.c
  * @brief GDEY0154D67 spi driver source file
- * @version 0.1
+ * @version 1.0
  */
 #include "epd_basic.h"
 

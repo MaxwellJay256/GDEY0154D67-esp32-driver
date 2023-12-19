@@ -1,6 +1,8 @@
 /**
  * @file epd_paint.h
  * @brief GUI painter header file
+ * @author @MaxwellJay256
+ * @version 1.0
  */
 #ifndef _EPD_PAINT_H_
 #define _EPD_PAINT_H_
