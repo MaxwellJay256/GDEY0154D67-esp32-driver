@@ -1,9 +1,9 @@
 /**
- * @file GDEY0154D67_spi.c
+ * @file epd_spi.c
  * @brief GDEY0154D67 spi driver source file
  * @version 0.1
  */
-#include "GDEY0154D67.h"
+#include "epd_basic.h"
 
 static const char *TAG = "GDEY0154D67_spi";
 static spi_device_handle_t spi;

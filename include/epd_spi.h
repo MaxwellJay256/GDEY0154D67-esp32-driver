@@ -1,10 +1,10 @@
 /**
- * @file GDEY0154D67_spi.h
+ * @file epd_spi.h
  * @brief GDEY0154D67 spi driver header file
  * @version 0.1
  */
-#ifndef _GDEY0154D67_SPI_H_
-#define _GDEY0154D67_SPI_H_
+#ifndef _SPI_H_
+#define _SPI_H_
 
 #include <stdlib.h>
 #include "esp_system.h"
@@ -29,4 +29,4 @@ void epd_spi_send_data(const uint8_t data);
  */
 void epd_spi_send_command(const uint8_t cmd);
 
-#endif // _GDEY0154D67_SPI_H_
+#endif // _SPI_H_

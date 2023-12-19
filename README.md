@@ -5,7 +5,7 @@ A driver for e-paper GDEY0154D67/GDEY0154D67-T03 based on `esp-idf v4.4.6`.
 **GDEY0154D67** is a 1.54 inch e-paper display with 200x200 resolution and partial screen update designed by [Good Display](https://www.good-display.com/).
 It integrates an [SSD1681](https://www.buydisplay.com/download/ic/SSD1681.pdf) driver IC.
 
-<img src="./docs/GDEY0154D67.webp" width="300" alt="GDEY0154D67" align="center">
+<img src="./docs/GDEY0154D67.webp" width="300" alt="GDEY0154D67">
 
 **GDEY0154D67-T03** is its variant with a touch panel whose driver IC is [FT6336](https://www.buydisplay.com/download/ic/FT6236-FT6336-FT6436L-FT6436_Datasheet.pdf).
 
@@ -39,3 +39,5 @@ Please refer to [usage.md](./docs/usage.md) for detailed guide and examples.
 - [GDEY0154D67-T03 - buy-lcd.com](https://buy-lcd.com/products/154-inch-e-paper-display-200x200-resolution-partial-screen-update-touch-eink-display-gdey0154d67-t03)
 - [电子墨水屏电子纸触摸屏1.54寸D67 - 大连佳显电子 (Taobao)](https://item.taobao.com/item.htm?spm=a1z10.5-c.w4002-1995619223.10.145a6581VpCF4I&id=577513991073)
 - [嵌入式单片机教程-桌面小屏幕实战教学 - Bilibili](https://www.bilibili.com/video/BV1wV4y1G7Vk)
+- [1.54inch e-Paper Module Manual - Waveshare Wiki](https://www.waveshare.net/wiki/1.54inch_e-Paper_Module_Manual)
+- [E-Paper ESP32 Driver Board - Waveshare Wiki](https://www.waveshare.net/wiki/E-Paper_ESP32_Driver_Board)

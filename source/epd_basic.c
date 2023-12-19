@@ -1,27 +1,31 @@
 /**
- * @file GDEY0154D67.c
- * @brief GDEY0154D67 driver source file
+ * @file epd_basic.c
+ * @brief GDEY0154D67 basic driver source file
  * @author @MaxwellJay256
- * @version 0.1
+ * @version 1.0
  */
-#include "GDEY0154D67.h"
+#include "epd_basic.h"
+#include "epd_commands.h"
 
 static const char *TAG = "GDEY0154D67";
 
 static bool epd_is_busy(void);
 static void epd_wait_idle(void);
 static void epd_wait_timeout(int timeout);
-static void epd_refresh_full(void);
-static void epd_refresh_part(void);
-static void epd_refresh_fast(void);
 
+/**
+ * @brief Initialize epaper, including gpio, spi and SSD1681
+ */
 void epd_init_all(void)
 {
     epd_gpio_init();
     epd_spi_init();
-    epd_ssd1681_init();
+    epd_IC_init();
 }
 
+/**
+ * @brief Initialize epaper gpio pins (apart from spi)
+ */
 void epd_gpio_init(void)
 {
     ESP_LOGI(TAG, "Initializing GPIO pins...");
@@ -45,7 +49,10 @@ void epd_gpio_init(void)
     ESP_LOGI(TAG, "GPIO pins initialized.");
 }
 
-void epd_ssd1681_init(void)
+/**
+ * @brief Initialize epaper IC - SSD1681
+ */
+void epd_IC_init(void)
 {
     ESP_LOGI(TAG, "Initializing SSD1681...");
 
@@ -55,37 +62,37 @@ void epd_ssd1681_init(void)
     vTaskDelay(pdMS_TO_TICKS(10));
 
     epd_wait_idle();
-    epd_spi_send_command(0x12); // Soft reset
+    epd_spi_send_command(EPD_SW_RESET); // Soft reset
     epd_wait_idle();
 
-    epd_spi_send_command(0x01); // Driver output control
+    epd_spi_send_command(EPD_DRIVER_OUTPUT_CONTROL); // Driver output control
     epd_spi_send_data(0xC7);    // Gate scan direction: GS0 -> GS63
     epd_spi_send_data(0x00);    // Source shift direction: S0 -> S199
     epd_spi_send_data(0x01);    // Booster switch: on
 
-    epd_spi_send_command(0x11); // Data entry mode setting
+    epd_spi_send_command(EPD_DATA_ENTRY_MODE_SETTING); // Data entry mode setting
     epd_spi_send_data(0x01);    // X increment, Y increment
 
-    epd_spi_send_command(0x44); // Set RAM X start/end address
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_START_END_POSITION); // Set RAM X start/end address
     epd_spi_send_data(0x00);    // RAM x address start at 00h;
     epd_spi_send_data(0x18);    // RAM x address end at 18h(24+240-1=263);
 
-    epd_spi_send_command(0x45); // Set RAM Y start/end address
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_START_END_POSITION); // Set RAM Y start/end address
     epd_spi_send_data(0xC7);    // RAM y address start at C7h;
     epd_spi_send_data(0x00);    // RAM y address end at 00h(320-1=319);
     epd_spi_send_data(0x00);
     epd_spi_send_data(0x00);
 
-    epd_spi_send_command(0x3C); // Border waveform
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL); // Border waveform
     epd_spi_send_data(0x05);    // Border floating
 
-    epd_spi_send_command(0x18); // Temperature sensor control
+    epd_spi_send_command(EPD_TEMPERATURE_SENSOR_CONTROL); // Temperature sensor control
     epd_spi_send_data(0x80);    // Internal temperature sensor
 
-    epd_spi_send_command(0x4E); // Set RAM x address count to 0;
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER); // Set RAM x address count to 0;
     epd_spi_send_data(0x00);
-    epd_spi_send_command(0x4F); // Set RAM y address count to 0X199;
-    epd_spi_send_data(0xC7);
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER); // Set RAM y address count to 0X199;
+    // epd_spi_send_data(0xC7);
     epd_spi_send_data(0x00);
     epd_wait_idle();
 
@@ -132,9 +139,12 @@ static void epd_wait_timeout(int timeout)
     }
 }
 
+/**
+ * @brief Enter deep sleep mode
+ */
 void epd_deep_sleep(void)
 {
-    epd_spi_send_command(0x10);
+    epd_spi_send_command(EPD_DEEP_SLEEP_MODE);
     epd_spi_send_data(0x01); // Enter deep sleep mode 1
     vTaskDelay(pdMS_TO_TICKS(100));
 }
@@ -143,41 +153,45 @@ void epd_deep_sleep(void)
 /**
  * @brief Refresh the screen using full update mode
  */
-static void epd_refresh_full(void)
+void epd_refresh_full(void)
 {
     ESP_LOGD(TAG, "Refreshing(full)...");
-    epd_spi_send_command(0x22); // Display update control 2
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
     epd_spi_send_data(0xF7);    // Load temperature and waveform setting
-    epd_spi_send_command(0x20); // Activate display update sequence
+    epd_spi_send_command(EPD_MASTER_ACTIVATION);
     epd_wait_timeout(1000);     // Wait at most 1s
 }
 /**
  * @brief Refresh the screen using partial update mode
  */
-static void epd_refresh_part(void)
+void epd_refresh_part(void)
 {
     ESP_LOGD(TAG, "Refreshing(partial)...");
-    epd_spi_send_command(0x22); // Display update control 2
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
     epd_spi_send_data(0xFF);    // Load temperature and waveform setting
-    epd_spi_send_command(0x20); // Activate display update sequence
+    epd_spi_send_command(EPD_MASTER_ACTIVATION);
     epd_wait_timeout(1000);     // Wait at most 1s
 }
 /**
  * @brief Refresh the screen using fast update mode
  */
-static void epd_refresh_fast(void)
+void epd_refresh_fast(void)
 {
     ESP_LOGD(TAG, "Refreshing(fast)...");
-    epd_spi_send_command(0x22); // Display update control 2
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
     epd_spi_send_data(0xC7);    // C7:
-    epd_spi_send_command(0x20); // Activate display update sequence
+    epd_spi_send_command(EPD_MASTER_ACTIVATION); // Activate display update sequence
     epd_wait_timeout(100);      // Wait at most 100ms
 }
 
+/**
+ * @brief Clear the screen with black / white
+ * @param color EPD_WHITE-white, EPD_BLACK-black
+ */
 void epd_clear_screen(uint8_t color)
 {
     uint16_t i;
-    epd_spi_send_command(0x24); // Write RAM for black(0)/white (1)
+    epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
     for (i = 0; i < EPD_SCREEN_HEIGHT * EPD_SCREEN_WIDTH / 8; ++i) {
         epd_spi_send_data(color); // bit set: white, bit reset: black
     }
@@ -191,7 +205,7 @@ void epd_clear_screen(uint8_t color)
 void epd_print_full_bydata(const uint8_t *data)
 {
     unsigned int i;
-    epd_spi_send_command(0x24); // Write RAM for black(0)/white (1)
+    epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
     for (i = 0; i < EPD_DATA_LEN; ++i)
         epd_spi_send_data(*data++);
 }
@@ -202,7 +216,7 @@ void epd_print_full_bydata(const uint8_t *data)
  */
 void epd_print_full_byfunction(void image_display(void))
 {
-    epd_ssd1681_init();
+    epd_IC_init();
     image_display(); // display image
     epd_refresh_full();
     epd_deep_sleep(); // enter deep sleep
@@ -216,7 +230,7 @@ void epd_print_full_byfunction(void image_display(void))
 void epd_print_full(
     void display_func(const uint8_t *data), const uint8_t *data)
 {
-    epd_ssd1681_init();
+    epd_IC_init();
     display_func(data); // display image
     epd_refresh_full();
     epd_deep_sleep(); // enter deep sleep
@@ -250,18 +264,18 @@ static void epd_partial_set_RAM_address(
         y_end2 = y_end2 % 256;
     }
 
-    epd_spi_send_command(0x44); // Set RAM X start/end address
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_START_END_POSITION); // Set RAM X start/end address
     epd_spi_send_data(x_start); // RAM x address start at 00h;
     epd_spi_send_data(x_end);   // RAM x address end at 18h(24+240-1=263);
-    epd_spi_send_command(0x45); // Set RAM Y start/end address
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_START_END_POSITION); // Set RAM Y start/end address
     epd_spi_send_data(y_start2); // RAM y address start at C7h;
     epd_spi_send_data(y_start1); // RAM y address start at C7h;
     epd_spi_send_data(y_end2);   // RAM y address end at 00h(320-1=319);
     epd_spi_send_data(y_end1);   // RAM y address end at 00h(320-1=319);
 
-    epd_spi_send_command(0x4E); // Set RAM x address count to 0;
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER); // Set RAM x address count to 0;
     epd_spi_send_data(x_start);
-    epd_spi_send_command(0x4F); // Set RAM y address count to 0X127;
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER); // Set RAM y address count to 0X127;
     epd_spi_send_data(y_start2);
     epd_spi_send_data(y_start1);
 }
@@ -288,12 +302,12 @@ void epd_print_part_byfunction(
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Lock the border to prevent accidental refresh
-    epd_spi_send_command(0x3C); // Border waveform
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL); // Border waveform
     epd_spi_send_data(0x80);
 
     epd_partial_set_RAM_address(x_start, y_start, x_size, y_size);
 
-    epd_spi_send_command(0x24); // Write RAM for black(0)/white (1)
+    epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
     image_display();
 
     epd_refresh_part();
@@ -323,12 +337,12 @@ void epd_print_part(
     vTaskDelay(pdMS_TO_TICKS(10));
 
     // Lock the border to prevent accidental refresh
-    epd_spi_send_command(0x3C); // Border waveform
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL); // Border waveform
     epd_spi_send_data(0x80);
 
     epd_partial_set_RAM_address(x_start, y_start, x_size, y_size);
 
-    epd_spi_send_command(0x24); // Write RAM for black(0)/white (1)
+    epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
     display_func(data);
 
     epd_refresh_part();
@@ -390,12 +404,12 @@ void epd_partial_data_add(
 static void epd_print_partial_data(void)
 {
     uint16_t i;
-    epd_spi_send_command(0x24);
+    epd_spi_send_command(EPD_WRITE_RAM);
     for (i = 0; i < EPD_DATA_LEN; ++i) {
         epd_spi_send_data(partial_data_array[i]);
     }
 
-    epd_spi_send_command(0x26);
+    epd_spi_send_command(EPD_WRITE_RAM_RED);
     for (i = 0; i < EPD_DATA_LEN; ++i) {
         epd_spi_send_data(partial_data_array[i]);
     }
