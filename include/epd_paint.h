@@ -2,7 +2,7 @@
  * @file epd_paint.h
  * @brief GUI painter header file
  * @author @MaxwellJay256
- * @version 1.0
+ * @version 1.1
  */
 #ifndef _EPD_PAINT_H_
 #define _EPD_PAINT_H_
@@ -20,6 +20,9 @@ extern "C"
 #define ROTATE_180 180 // Rotate 180 degrees clockwise
 #define ROTATE_270 270 // Rotate 270 degrees clockwise
 
+/**
+ * @brief The mirror image of the display, MIRROR_NONE, MIRROR_HORIZONTAL, MIRROR_VERTICAL, MIRROR_ORIGIN
+ */
 typedef enum {
     MIRROR_NONE = 0x00,
     MIRROR_HORIZONTAL = 0x01,
@@ -33,7 +36,7 @@ typedef enum {
 #define FONT_BACKGROUND EPD_WHITE
 
 /**
- * @brief The size of the point
+ * @brief The size of the point, from DOT_PIXEL_1X1 to DOT_PIXEL_8X8
  */
 typedef enum {
     DOT_PIXEL_1X1 = 1, // 1 x 1
@@ -47,6 +50,9 @@ typedef enum {
 } DOT_PIXEL;
 #define DOT_PIXEL_DEFAULT DOT_PIXEL_1X1  //Default dot pilex
 
+/**
+ * @brief The fill style of the point, DOT_FILL_AROUND or DOT_FILL_RIGHTUP
+ */
 typedef enum {
     DOT_FILL_AROUND = 1,		// dot pixel 1 x 1
     DOT_FILL_RIGHTUP , 		// dot pixel 2 X 2
@@ -54,7 +60,7 @@ typedef enum {
 #define DOT_STYLE_DEFAULT DOT_FILL_AROUND  //Default dot pilex
 
 /**
- * @brief Line style, solid or dashed
+ * @brief Line style, LINE_STYLE_SOLID or LINE_STYLE_DOTTED
 **/
 typedef enum {
     LINE_STYLE_SOLID = 0,
@@ -62,13 +68,16 @@ typedef enum {
 } LINE_STYLE;
 
 /**
- * @brief Whether the graphic is filled
+ * @brief Whether the graphic is filled, DRAW_FILL_EMPTY or DRAW_FILL_FULL
 **/
 typedef enum {
     DRAW_FILL_EMPTY = 0,
     DRAW_FILL_FULL,
 } DRAW_FILL;
 
+/**
+ * @brief image class that you can draw on
+ */
 class Paint
 {
 private:
@@ -89,6 +98,7 @@ public:
     Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, uint16_t color);
     ~Paint();
 
+    void clear(uint16_t color=IMAGE_BACKGROUND);
     void print_full();
     void print_part();
 

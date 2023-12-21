@@ -2,7 +2,7 @@
  * @file epd_paint.cpp
  * @brief GUI painter source file
  * @author @MaxwellJay256
- * @version 1.0
+ * @version 1.1
  */
 #include "epd_paint.h"
 #include "epd_commands.h"
@@ -51,6 +51,20 @@ Paint::Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, u
 Paint::~Paint()
 {
     delete _image;
+}
+
+/**
+ * @brief Clear the canvas
+ * @param color Color to fill (EPD_WHITE or EPD_BLACK)
+ */
+void Paint::clear(uint16_t color)
+{
+    // Write color to every byte of _image
+    for (uint16_t j = 0; j < _height_byte; j++) {
+        for (uint16_t i = 0; i < _width_byte; i++) {
+            _image[i + j * _width_byte] = color;
+        }
+    }
 }
 
 /**

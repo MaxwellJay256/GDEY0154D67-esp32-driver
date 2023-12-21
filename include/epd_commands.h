@@ -1,6 +1,7 @@
 /**
  * @file epd_commands.h
  * @brief GDEY0154D67 hex command definitions
+ * @ref /docs/GDEW0154Z04_Specification.pdf
  */
 #ifndef _EPD_COMMANDS_H_
 #define _EPD_COMMANDS_H_
