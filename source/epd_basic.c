@@ -105,7 +105,7 @@ void epd_IC_init(void)
  */
 static bool epd_is_busy(void)
 {
-    return gpio_get_level(EPD_BUSY);
+    return !gpio_get_level(EPD_BUSY);
 }
 
 /**
@@ -190,12 +190,14 @@ void epd_refresh_fast(void)
  */
 void epd_clear_screen(uint8_t color)
 {
+    ESP_LOGI(TAG, "Clearing screen with %s...", color ? "white" : "black");
     uint16_t i;
     epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
     for (i = 0; i < EPD_SCREEN_HEIGHT * EPD_SCREEN_WIDTH / 8; ++i) {
         epd_spi_send_data(color); // bit set: white, bit reset: black
     }
     epd_refresh_full();
+    ESP_LOGI(TAG, "Screen cleared.");
 }
 
 /**

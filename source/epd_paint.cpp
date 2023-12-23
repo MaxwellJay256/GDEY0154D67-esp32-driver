@@ -4,7 +4,7 @@
  * @author @MaxwellJay256
  * @version 1.1
  */
-#include "epd_paint.h"
+#include "epd_paint.hpp"
 #include "epd_commands.h"
 
 static const char *TAG = "GDEY0154D67-Paint";

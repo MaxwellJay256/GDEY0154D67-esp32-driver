@@ -21,14 +21,14 @@ extern "C" {
 #include "epd_spi.h"
 
 // IO settings
-#define EPD_BUSY GPIO_NUM_13 // Busy pin, 1-busy 0-idle
-#define EPD_RES GPIO_NUM_12  // Reset pin, 1-normal 0-reset
-#define EPD_DC GPIO_NUM_14   // Data/Command, 1-data 0-command
-#define EPD_CS GPIO_NUM_27   // Chip Select, 1-inactive 0-active
+#define EPD_BUSY GPIO_NUM_25 // Busy pin, 1-busy 0-idle
+#define EPD_RES GPIO_NUM_26  // Reset pin, 1-normal 0-reset
+#define EPD_DC GPIO_NUM_27   // Data/Command, 1-data 0-command
+#define EPD_CS GPIO_NUM_15   // Chip Select, 1-inactive 0-active
 // SPI settings
-#define EPD_SPI_MISO GPIO_NUM_23 // MISO signal
-#define EPD_SPI_MOSI GPIO_NUM_26 // MOSI signal
-#define EPD_SPI_CLK GPIO_NUM_25  // CLK signal
+#define EPD_SPI_MISO GPIO_NUM_12 // MISO signal
+#define EPD_SPI_MOSI GPIO_NUM_14 // MOSI signal
+#define EPD_SPI_CLK GPIO_NUM_13  // CLK signal
 
 #define EPD_SCREEN_WIDTH 200  // Width of epaper
 #define EPD_SCREEN_HEIGHT 200 // Height of epaper
