@@ -31,7 +31,7 @@ set(EXTRA_COMPONENT_DIRS "./components")
 
 ## Usage
 
-Please refer to [usage.md](./docs/usage.md) for detailed guide and examples.
+Check out [/docs](./docs) directory for detailed instructions and examples.
 
 ## References
 
