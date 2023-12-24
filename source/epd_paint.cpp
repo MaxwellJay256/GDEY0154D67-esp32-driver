@@ -13,17 +13,18 @@ static const char *TAG = "GDEY0154D67-Paint";
  * @brief Default constructor, no image is set
  */
 Paint::Paint() :
-    _image(NULL),
     _width(EPD_SCREEN_WIDTH), _height(EPD_SCREEN_HEIGHT),
     _color(EPD_BLACK),
     _rotate(ROTATE_0),
     _mirror(MIRROR_NONE),
     _scale(2)
 {
+    _image = new uint8_t[EPD_DATA_LEN];
     _width_byte = (_width % 8 == 0)? (_width / 8 ): (_width / 8 + 1);
     _height_byte = _height;
     _width_memory = _width_byte;
     _height_memory = _height;
+    ESP_LOGI(TAG, "Paint object created with default parameters.");
 }
 
 /**
@@ -46,11 +47,13 @@ Paint::Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, u
     _height_byte = _height;
     _width_memory = _width_byte;
     _height_memory = _height;
+    ESP_LOGI(TAG, "Paint object created with parameters.");
 }
 
 Paint::~Paint()
 {
     delete _image;
+    ESP_LOGI(TAG, "Paint object destroyed.");
 }
 
 /**
@@ -65,6 +68,7 @@ void Paint::clear(uint16_t color)
             _image[i + j * _width_byte] = color;
         }
     }
+    ESP_LOGD(TAG, "Canvas cleared.");
 }
 
 /**
@@ -77,6 +81,7 @@ void Paint::print_full()
         return;
     }
 
+    ESP_LOGI(TAG, "Printing canvas with full refresh...");
     epd_spi_send_command(EPD_WRITE_RAM);
     for (uint16_t j = 0; j < _height_byte; j++) {
         for (uint16_t i = 0; i < _width_byte; i++) {
@@ -85,7 +90,7 @@ void Paint::print_full()
     }
 
     epd_refresh_full();
-    epd_deep_sleep();
+    // epd_deep_sleep();
 }
 
 /**
@@ -98,6 +103,7 @@ void Paint::print_part()
         return;
     }
 
+    ESP_LOGI(TAG, "Printing canvas with partial refresh...");
     epd_spi_send_command(EPD_WRITE_RAM);
     for (uint16_t j = 0; j < _height_byte; j++) {
         for (uint16_t i = 0; i < _width_byte; i++) {
@@ -112,7 +118,7 @@ void Paint::print_part()
     }
     
     epd_refresh_part();
-    epd_deep_sleep();
+    // epd_deep_sleep();
 }
 
 /**
@@ -132,6 +138,7 @@ void Paint::set_rotate(uint16_t rotate)
 {
     if (rotate == ROTATE_0 || rotate == ROTATE_90 || rotate == ROTATE_180 || rotate == ROTATE_270) {
         _rotate = rotate;
+        ESP_LOGD(TAG, "Rotation set to %d.", rotate);
     } else {
         ESP_LOGW(TAG, "Rotation must be 0, 90, 180 or 270.");
     }
@@ -146,6 +153,7 @@ void Paint::set_mirroring(uint16_t mirror)
     if (mirror == MIRROR_NONE || mirror == MIRROR_HORIZONTAL ||
         mirror == MIRROR_VERTICAL || mirror == MIRROR_ORIGIN) {
         _mirror = mirror;
+        ESP_LOGD(TAG, "Mirror set to %d.", mirror);
     } else {
         ESP_LOGW(TAG, "Mirror must be MIRROR_NONE, MIRROR_HORIZONTAL, \
             MIRROR_VERTICAL or MIRROR_ORIGIN.");
@@ -158,6 +166,7 @@ void Paint::set_mirroring(uint16_t mirror)
  */
 void Paint::set_scale(uint16_t scale)
 {
+    ESP_LOGD(TAG, "Scale set to %d.", scale);
     if (scale == 2) {
         _scale = scale;
         _width_byte = (_width_memory % 8 == 0)? (_width_memory / 8 ): (_width_memory / 8 + 1);
@@ -171,7 +180,7 @@ void Paint::set_scale(uint16_t scale)
         _width_byte = (_width_memory % 2 == 0)? (_width_memory / 2 ): (_width_memory / 2 + 1);
     }
     else {
-        ESP_LOGW(TAG, "Scale only support 2, 4, and 7.");
+        ESP_LOGW(TAG, "Scale only supports 2, 4, and 7.");
     }
 }
 
@@ -190,6 +199,7 @@ void Paint::draw_pixel(uint16_t x, uint16_t y, uint16_t color)
 
     uint16_t point_x = x;
     uint16_t point_y = y;
+    ESP_LOGV(TAG, "Drawing pixel at (%d, %d).", x, y);
 
     // Calculate the coordinates of the point after rotation
     switch (_rotate) {
@@ -244,9 +254,9 @@ void Paint::draw_pixel(uint16_t x, uint16_t y, uint16_t color)
         addr = point_x / 8 + point_y * _width_byte;
         data = _image[addr];
         if (color == EPD_BLACK)
-            _image[addr] = data | (0x80 >> (point_x % 8));
-        else
             _image[addr] = data & ~(0x80 >> (point_x % 8));
+        else
+            _image[addr] = data | (0x80 >> (point_x % 8));
         break;
     case 4:
         addr = point_x / 4 + point_y * _width_byte;
@@ -369,6 +379,7 @@ void Paint::draw_line(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
+    ESP_LOGI(TAG, "Drawing line from (%d, %d) to (%d, %d).", x_start, y_start, x_end, y_end);
 
     uint16_t x_point = x_start;
     uint16_t y_point = y_start;
@@ -425,6 +436,7 @@ void Paint::draw_rectangle(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
+    ESP_LOGI(TAG, "Drawing rectangle from (%d, %d) to (%d, %d).", x_start, y_start, x_end, y_end);
 
     if (draw_fill) {
         uint16_t y;
@@ -457,6 +469,7 @@ void Paint::draw_circle(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
+    ESP_LOGI(TAG, "Drawing circle at (%d, %d) with radius %d.", x, y, radius);
 
     // Draw a circle from(0, r) as a starting point
     int16_t x_current = 0, y_current = radius;
@@ -531,6 +544,7 @@ void Paint::draw_char(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
+    ESP_LOGD(TAG, "Drawing character '%c' at (%d, %d).", ascii_char, x, y);
 
     uint32_t char_offset = (ascii_char - ' ') * font->Height * (font->Width / 8 + (font->Width % 8 ? 1 : 0));
     const uint8_t* ptr = &font->table[char_offset];
@@ -577,6 +591,7 @@ void Paint::draw_string(
         ESP_LOGE(TAG, "Input string exceeds the display boundaries.");
         return;
     }
+    ESP_LOGI(TAG, "Drawing string '%s' at (%d, %d).", text, x, y);
 
     uint16_t x_point = x, y_point = y;
     while (*text != '\0')
@@ -619,6 +634,7 @@ void Paint::draw_num(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
+    ESP_LOGI(TAG, "Drawing number '%ld' at (%d, %d).", (long)num, x, y);
 
     uint8_t str[ARRAY_LEN] = {0};
     sprintf((char *)str, "%ld", (long)num);
@@ -659,6 +675,7 @@ void Paint::draw_image(
     uint32_t addr = 0; // The address of the point in the image_buffer
     uint32_t pAddr = 0; // The address of the point in the real picture
 
+    ESP_LOGI(TAG, "Drawing image at (%d, %d) with width %d and height %d.", x_start, y_start, width, height);
     for (y = 0; y < height; ++y) {
         for (x = 0; x < w_byte; ++x) {
             addr = x + y * w_byte;

@@ -46,6 +46,7 @@ void epd_gpio_init(void)
     io_conf.pull_up_en = 1;                    // enable pull-up mode
     gpio_config(&io_conf);
 
+    gpio_set_level(EPD_CS, 0);
     ESP_LOGI(TAG, "GPIO pins initialized.");
 }
 
@@ -59,7 +60,7 @@ void epd_IC_init(void)
     gpio_set_level(EPD_RES, 0); // Reset module
     vTaskDelay(pdMS_TO_TICKS(10));
     gpio_set_level(EPD_RES, 1); // Release reset
-    vTaskDelay(pdMS_TO_TICKS(10));
+    vTaskDelay(pdMS_TO_TICKS(100));
 
     epd_wait_idle();
     epd_spi_send_command(EPD_SW_RESET); // Soft reset
@@ -92,7 +93,7 @@ void epd_IC_init(void)
     epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER); // Set RAM x address count to 0;
     epd_spi_send_data(0x00);
     epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER); // Set RAM y address count to 0X199;
-    // epd_spi_send_data(0xC7);
+    epd_spi_send_data(0xC7);
     epd_spi_send_data(0x00);
     epd_wait_idle();
 
@@ -105,7 +106,7 @@ void epd_IC_init(void)
  */
 static bool epd_is_busy(void)
 {
-    return !gpio_get_level(EPD_BUSY);
+    return gpio_get_level(EPD_BUSY);
 }
 
 /**
@@ -126,14 +127,15 @@ static void epd_wait_idle(void)
  */
 static void epd_wait_timeout(int timeout)
 {
-    while (timeout > 0)
+    int time_remain = timeout;
+    while (time_remain > 0)
     {
         if (epd_is_busy() == false)
             break;
         vTaskDelay(pdMS_TO_TICKS(100));
-        timeout -= 100;
+        time_remain -= 100;
     }
-    if (timeout <= 0)
+    if (time_remain <= 0)
     {
         ESP_LOGE(TAG, "Timeout after %dms.", timeout);
     }
@@ -144,6 +146,7 @@ static void epd_wait_timeout(int timeout)
  */
 void epd_deep_sleep(void)
 {
+    ESP_LOGD(TAG, "Entering deep sleep mode...");
     epd_spi_send_command(EPD_DEEP_SLEEP_MODE);
     epd_spi_send_data(0x01); // Enter deep sleep mode 1
     vTaskDelay(pdMS_TO_TICKS(100));
@@ -159,7 +162,7 @@ void epd_refresh_full(void)
     epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
     epd_spi_send_data(0xF7);    // Load temperature and waveform setting
     epd_spi_send_command(EPD_MASTER_ACTIVATION);
-    epd_wait_timeout(1000);     // Wait at most 1s
+    epd_wait_timeout(3000);     // Wait at most 1s
 }
 /**
  * @brief Refresh the screen using partial update mode
@@ -167,10 +170,10 @@ void epd_refresh_full(void)
 void epd_refresh_part(void)
 {
     ESP_LOGD(TAG, "Refreshing(partial)...");
-    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
-    epd_spi_send_data(0xFF);    // Load temperature and waveform setting
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2);
+    epd_spi_send_data(0xFF);
     epd_spi_send_command(EPD_MASTER_ACTIVATION);
-    epd_wait_timeout(1000);     // Wait at most 1s
+    epd_wait_timeout(1000);
 }
 /**
  * @brief Refresh the screen using fast update mode
@@ -192,9 +195,9 @@ void epd_clear_screen(uint8_t color)
 {
     ESP_LOGI(TAG, "Clearing screen with %s...", color ? "white" : "black");
     uint16_t i;
-    epd_spi_send_command(EPD_WRITE_RAM); // Write RAM for black(0)/white (1)
-    for (i = 0; i < EPD_SCREEN_HEIGHT * EPD_SCREEN_WIDTH / 8; ++i) {
-        epd_spi_send_data(color); // bit set: white, bit reset: black
+    epd_spi_send_command(EPD_WRITE_RAM);
+    for (i = 0; i < EPD_DATA_LEN; ++i) {
+        epd_spi_send_data(color);
     }
     epd_refresh_full();
     ESP_LOGI(TAG, "Screen cleared.");
