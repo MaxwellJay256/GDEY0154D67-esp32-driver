@@ -75,6 +75,13 @@ typedef enum {
     DRAW_FILL_FULL,
 } DRAW_FILL;
 
+typedef struct {
+    uint16_t x_start;
+    uint16_t y_start;
+    uint16_t width;
+    uint16_t height;
+} WINDOW;
+
 /**
  * @brief image class that you can draw on
  */
@@ -93,14 +100,20 @@ private:
     uint16_t _height_byte;
     uint16_t _scale;
 
+    void set_RAM_address(
+        uint16_t x_start, uint16_t x_end, 
+        uint16_t y_start1, uint16_t y_end1, 
+        uint16_t y_start2, uint16_t y_end2);
+
 public:
     Paint();
-    Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, uint16_t color);
+    Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, uint8_t color);
     ~Paint();
 
-    void clear(uint16_t color=IMAGE_BACKGROUND);
+    void clear(uint8_t color=IMAGE_BACKGROUND);
+    void clear_area(WINDOW window, uint8_t color=IMAGE_BACKGROUND);
     void print_full();
-    void print_part();
+    void print_part(WINDOW window);
 
     void set_image(uint8_t *image);
     void set_rotate(uint16_t rotate);

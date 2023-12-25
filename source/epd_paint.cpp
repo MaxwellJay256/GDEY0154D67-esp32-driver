@@ -35,7 +35,7 @@ Paint::Paint() :
  * @param rotate Rotation of the image
  * @param color Color of the image
  */
-Paint::Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, uint16_t color) :
+Paint::Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, uint8_t color) :
     _image(image),
     _width(width), _height(height),
     _color(color),
@@ -52,15 +52,14 @@ Paint::Paint(uint8_t *image, uint16_t width, uint16_t height, uint16_t rotate, u
 
 Paint::~Paint()
 {
-    delete _image;
-    ESP_LOGI(TAG, "Paint object destroyed.");
+    ESP_LOGD(TAG, "Paint object destroyed.");
 }
 
 /**
  * @brief Clear the canvas
  * @param color Color to fill (EPD_WHITE or EPD_BLACK)
  */
-void Paint::clear(uint16_t color)
+void Paint::clear(uint8_t color)
 {
     // Write color to every byte of _image
     for (uint16_t j = 0; j < _height_byte; j++) {
@@ -68,7 +67,44 @@ void Paint::clear(uint16_t color)
             _image[i + j * _width_byte] = color;
         }
     }
-    ESP_LOGD(TAG, "Canvas cleared.");
+    ESP_LOGI(TAG, "Canvas cleared.");
+}
+
+/**
+ * @brief Clear the canvas in a specific area
+ * @param window Area to clear
+ * @param color Color to fill (EPD_WHITE or EPD_BLACK)
+ */
+void Paint::clear_area(WINDOW window, uint8_t color)
+{
+    // Write color to every byte of _image
+    for (uint16_t j = window.y_start; j < window.y_start + window.height; j++) {
+        for (uint16_t i = window.x_start / 8; i < window.x_start / 8 + window.width / 8; i++) {
+            _image[i + j * _width_byte] = color;
+        }
+    }
+    ESP_LOGI(TAG, "Canvas cleared in area (%d, %d) - (%d, %d).", window.x_start, window.y_start, window.x_start + window.width, window.y_start + window.height);
+}
+
+void Paint::set_RAM_address(
+    uint16_t x_start, uint16_t x_end, 
+    uint16_t y_start1, uint16_t y_end1, 
+    uint16_t y_start2, uint16_t y_end2)
+{
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_START_END_POSITION);
+    epd_spi_send_data(x_start);
+    epd_spi_send_data(x_end);
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_START_END_POSITION);
+    epd_spi_send_data(y_start2);
+    epd_spi_send_data(y_start1);
+    epd_spi_send_data(y_end2);
+    epd_spi_send_data(y_end1);
+
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER);
+    epd_spi_send_data(x_start);
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER);
+    epd_spi_send_data(y_start2);
+    epd_spi_send_data(y_start1);
 }
 
 /**
@@ -82,6 +118,17 @@ void Paint::print_full()
     }
 
     ESP_LOGI(TAG, "Printing canvas with full refresh...");
+    
+    gpio_set_level(EPD_RES, 0);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    gpio_set_level(EPD_RES, 1);
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL);
+    epd_spi_send_data(0x05);
+
+    set_RAM_address(0x00, 0x18, 0x00, 0x00, 0xC7, 0x00);
+
     epd_spi_send_command(EPD_WRITE_RAM);
     for (uint16_t j = 0; j < _height_byte; j++) {
         for (uint16_t i = 0; i < _width_byte; i++) {
@@ -90,13 +137,12 @@ void Paint::print_full()
     }
 
     epd_refresh_full();
-    // epd_deep_sleep();
 }
 
 /**
  * @brief Print the image using partial refresh
  */
-void Paint::print_part()
+void Paint::print_part(WINDOW window)
 {
     if (_image == NULL) {
         ESP_LOGE(TAG, "Image is not set.");
@@ -104,21 +150,51 @@ void Paint::print_part()
     }
 
     ESP_LOGI(TAG, "Printing canvas with partial refresh...");
+    unsigned int x_start = window.x_start / 8;
+    unsigned int x_end= window.width / 8 + x_start - 1;
+
+    unsigned int y_start1 = 0; // y_start 高 8 位
+    unsigned int y_start2 = EPD_SCREEN_HEIGHT - window.y_start; // y_start 低 8 位
+    unsigned int y_end1 = 0; // y_end 高 8 位
+    unsigned int y_end2 = y_start2 + window.height - 1; // y_end 低 8 位
+    
+    printf("window: (%d, %d) - (%d, %d)\n", window.x_start, window.y_start, x_end, y_end2);
+    // 将 y_start 拆分成两个字节
+    if (y_start2 >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    // 将 y_end 拆分成两个字节
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+    
+    gpio_set_level(EPD_RES, 0);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    gpio_set_level(EPD_RES, 1);
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL);
+    epd_spi_send_data(0x81);
+
+    set_RAM_address(x_start, x_end, y_start1, y_end1, y_start2, y_end2);
+
     epd_spi_send_command(EPD_WRITE_RAM);
-    for (uint16_t j = 0; j < _height_byte; j++) {
-        for (uint16_t i = 0; i < _width_byte; i++) {
+    for (uint16_t j = window.y_start; j < window.y_start + window.height; ++j) {
+        for (uint16_t i = window.x_start / 8; i < (window.x_start + window.width) / 8; ++i) {
             epd_spi_send_data(_image[i + j * _width_byte]);
         }
     }
+    /*/
     epd_spi_send_command(EPD_WRITE_RAM_RED);
     for (uint16_t j = 0; j < _height_byte; j++) {
         for (uint16_t i = 0; i < _width_byte; i++) {
             epd_spi_send_data(_image[i + j * _width_byte]);
         }
     }
-    
+    //*/
     epd_refresh_part();
-    // epd_deep_sleep();
 }
 
 /**
@@ -166,7 +242,7 @@ void Paint::set_mirroring(uint16_t mirror)
  */
 void Paint::set_scale(uint16_t scale)
 {
-    ESP_LOGD(TAG, "Scale set to %d.", scale);
+    ESP_LOGD(TAG, "Setting scale to %d...", scale);
     if (scale == 2) {
         _scale = scale;
         _width_byte = (_width_memory % 8 == 0)? (_width_memory / 8 ): (_width_memory / 8 + 1);
@@ -379,7 +455,7 @@ void Paint::draw_line(
         ESP_LOGE(TAG, "Exceeding display boundaries.");
         return;
     }
-    ESP_LOGI(TAG, "Drawing line from (%d, %d) to (%d, %d).", x_start, y_start, x_end, y_end);
+    ESP_LOGD(TAG, "Drawing line from (%d, %d) to (%d, %d).", x_start, y_start, x_end, y_end);
 
     uint16_t x_point = x_start;
     uint16_t y_point = y_start;

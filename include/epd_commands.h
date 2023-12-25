@@ -31,6 +31,8 @@
 #define EPD_READ_RAM_OPTION                      0x41 // Read RAM option
 #define EPD_SET_RAM_X_ADDRESS_START_END_POSITION 0x44 // Specify the start/end positions of the window address in the X direction
 #define EPD_SET_RAM_Y_ADDRESS_START_END_POSITION 0x45 // Specify the start/end positions of the window address in the Y direction
+#define EPD_AUTO_WRITE_RED_RAM                   0x46 // Auto Write RED RAM for Regular Pattern
+#define EPD_AUTO_WRITE_BW_RAM                    0x47 // Auto Write B/W RAM for Regular Pattern
 #define EPD_SET_RAM_X_ADDRESS_COUNTER            0x4E // Make initial settings for the RAM X address in the address counter (AC)
 #define EPD_SET_RAM_Y_ADDRESS_COUNTER            0x4F // Make initial settings for the RAM Y address in the address counter (AC)
 

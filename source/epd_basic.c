@@ -63,7 +63,7 @@ void epd_IC_init(void)
     vTaskDelay(pdMS_TO_TICKS(100));
 
     epd_wait_idle();
-    epd_spi_send_command(EPD_SW_RESET); // Soft reset
+    epd_spi_send_command(EPD_SW_RESET);
     epd_wait_idle();
 
     epd_spi_send_command(EPD_DRIVER_OUTPUT_CONTROL); // Driver output control
@@ -71,29 +71,29 @@ void epd_IC_init(void)
     epd_spi_send_data(0x00);    // Source shift direction: S0 -> S199
     epd_spi_send_data(0x01);    // Booster switch: on
 
-    epd_spi_send_command(EPD_DATA_ENTRY_MODE_SETTING); // Data entry mode setting
+    epd_spi_send_command(EPD_DATA_ENTRY_MODE_SETTING);
     epd_spi_send_data(0x01);    // X increment, Y increment
 
-    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_START_END_POSITION); // Set RAM X start/end address
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_START_END_POSITION);
     epd_spi_send_data(0x00);    // RAM x address start at 00h;
     epd_spi_send_data(0x18);    // RAM x address end at 18h(24+240-1=263);
 
-    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_START_END_POSITION); // Set RAM Y start/end address
-    epd_spi_send_data(0xC7);    // RAM y address start at C7h;
-    epd_spi_send_data(0x00);    // RAM y address end at 00h(320-1=319);
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_START_END_POSITION);
+    epd_spi_send_data(0xC7);    // RAM y address start at C7h(199, b00011001);
     epd_spi_send_data(0x00);
+    epd_spi_send_data(0x00);    // RAM y address end at 00h;
     epd_spi_send_data(0x00);
 
-    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL); // Border waveform
+    epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL);
     epd_spi_send_data(0x05);    // Border floating
 
-    epd_spi_send_command(EPD_TEMPERATURE_SENSOR_CONTROL); // Temperature sensor control
+    epd_spi_send_command(EPD_TEMPERATURE_SENSOR_CONTROL);
     epd_spi_send_data(0x80);    // Internal temperature sensor
 
-    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER); // Set RAM x address count to 0;
-    epd_spi_send_data(0x00);
-    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER); // Set RAM y address count to 0X199;
-    epd_spi_send_data(0xC7);
+    epd_spi_send_command(EPD_SET_RAM_X_ADDRESS_COUNTER);
+    epd_spi_send_data(0x00);    // Set RAM x address count to 0;
+    epd_spi_send_command(EPD_SET_RAM_Y_ADDRESS_COUNTER); 
+    epd_spi_send_data(0xC7);    // Set RAM y address count to 0X199;
     epd_spi_send_data(0x00);
     epd_wait_idle();
 
@@ -102,7 +102,8 @@ void epd_IC_init(void)
 
 /**
  * @brief Check if epaper is busy
- * @return true-busy; false-idle
+ * @return 
+ *     - true - busy; false - idle
  */
 static bool epd_is_busy(void)
 {
@@ -152,7 +153,6 @@ void epd_deep_sleep(void)
     vTaskDelay(pdMS_TO_TICKS(100));
 }
 
-/*Refresh functions*/
 /**
  * @brief Refresh the screen using full update mode
  */
@@ -182,7 +182,7 @@ void epd_refresh_fast(void)
 {
     ESP_LOGD(TAG, "Refreshing(fast)...");
     epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
-    epd_spi_send_data(0xC7);    // C7:
+    epd_spi_send_data(0xC7);    // C7: Without loading temperature value
     epd_spi_send_command(EPD_MASTER_ACTIVATION); // Activate display update sequence
     epd_wait_timeout(100);      // Wait at most 100ms
 }

@@ -36,12 +36,10 @@ extern "C" {
 #define EPD_WHITE 0xff // White pixel
 #define EPD_BLACK 0x00 // Black pixel
 
-///////Initialize functions///////
 void epd_init_all(void);
 void epd_gpio_init(void);
 void epd_IC_init(void);
 
-///////Basic display functions///////
 void epd_clear_screen(uint8_t color);
 void epd_deep_sleep(void);
 
