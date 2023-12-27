@@ -5,21 +5,32 @@ A driver for e-paper GDEY0154D67/GDEY0154D67-T03 based on `esp-idf v4.4.6`.
 **GDEY0154D67** is a 1.54 inch e-paper display with 200x200 resolution and partial screen update designed by [Good Display](https://www.good-display.com/).
 It integrates an [SSD1681](https://www.buydisplay.com/download/ic/SSD1681.pdf) driver IC.
 
-<img src="./docs/GDEY0154D67.webp" width="300" alt="GDEY0154D67">
+<img src="./docs/images/GDEY0154D67.webp" width="300" alt="GDEY0154D67">
 
 **GDEY0154D67-T03** is its variant with a touch panel whose driver IC is [FT6336](https://www.buydisplay.com/download/ic/FT6236-FT6336-FT6436L-FT6436_Datasheet.pdf).
 
-<img src="./docs/GDEY0154D67-T03.webp" width="300" alt="GDEY0154D67-T03">
+<img src="./docs/images/GDEY0154D67-T03.webp" width="300" alt="GDEY0154D67-T03">
 
 ## Installation
 
 This driver is designed as a **component** in an ESP-IDF project.
-To use it, you need to add it as a submodule in your project.
+
+### Install as a submodule
+If your project is already a git repository, you can add this driver as a submodule.
 
 ```bash
 git submodule add https://github.com/MaxwellJay256/GDEY0154D67-esp32-driver.git components/<module-name>
 ```
 You need to change `<module-name>` to the name you want, e.g. `epaper`.
+
+### Install in a non-git project
+If your project is not a git repository, you can either:
+
+- Clone this repository to `components/<module-name>`.
+
+```bash
+git clone https://github.com/MaxwellJay256/GDEY0154D67-esp32-driver.git components/<module-name>
+```
 
 - Or, you can download the latest [release](https://github.com/MaxwellJay256/GDEY0154D67-esp32-driver/releases) and extract it to `components/<module-name>`.
 
