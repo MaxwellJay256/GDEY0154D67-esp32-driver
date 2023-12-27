@@ -18,6 +18,8 @@
 #define EPD_DATA_ENTRY_MODE_SETTING    0x11 // Define data entry sequence
 #define EPD_SW_RESET                   0x12 // Resets the commands and parameters to their S/W reset default values, except Deep Sleep Mode (0x10)
 #define EPD_TEMPERATURE_SENSOR_CONTROL 0x18 // Temperature sensor selection
+#define EPD_TEMPERATURE_SENSOR_WRITE   0x1A // Write to temperature register
+#define EPD_TEMPERATURE_SENSOR_READ    0x1B // Read from temperature register
 /// 0x20-0x2F
 #define EPD_MASTER_ACTIVATION         0x20 // Activate display update sequence
 #define EPD_DISPLAY_UPDATE_COINTROL_1 0x21 // RAM content option for display update

@@ -10,7 +10,7 @@
 static const char *TAG = "GDEY0154D67";
 
 static bool epd_is_busy(void);
-static void epd_wait_idle(void);
+void epd_wait_idle(void);
 static void epd_wait_timeout(int timeout);
 
 /**
@@ -113,7 +113,7 @@ static bool epd_is_busy(void)
 /**
  * @brief Wait until epaper is idle
  */
-static void epd_wait_idle(void)
+void epd_wait_idle(void)
 {
     while (1)
     {
@@ -133,8 +133,8 @@ static void epd_wait_timeout(int timeout)
     {
         if (epd_is_busy() == false)
             break;
-        vTaskDelay(pdMS_TO_TICKS(100));
-        time_remain -= 100;
+        vTaskDelay(pdMS_TO_TICKS(50));
+        time_remain -= 50;
     }
     if (time_remain <= 0)
     {
@@ -184,7 +184,7 @@ void epd_refresh_fast(void)
     epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2); // Display update control 2
     epd_spi_send_data(0xC7);    // C7: Without loading temperature value
     epd_spi_send_command(EPD_MASTER_ACTIVATION); // Activate display update sequence
-    epd_wait_timeout(100);      // Wait at most 100ms
+    epd_wait_timeout(2000);      // Wait at most 100ms
 }
 
 /**

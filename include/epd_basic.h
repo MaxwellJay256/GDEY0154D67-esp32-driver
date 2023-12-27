@@ -40,6 +40,7 @@ void epd_init_all(void);
 void epd_gpio_init(void);
 void epd_IC_init(void);
 
+void epd_wait_idle(void);
 void epd_clear_screen(uint8_t color);
 void epd_deep_sleep(void);
 

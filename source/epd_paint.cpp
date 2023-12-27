@@ -176,7 +176,7 @@ void Paint::print_part(WINDOW window)
     vTaskDelay(pdMS_TO_TICKS(10));
 
     epd_spi_send_command(EPD_BORDER_WAVEFORM_CONTROL);
-    epd_spi_send_data(0x81);
+    epd_spi_send_data(0x80);
 
     set_RAM_address(x_start, x_end, y_start1, y_end1, y_start2, y_end2);
 
@@ -196,6 +196,54 @@ void Paint::print_part(WINDOW window)
     //*/
     epd_refresh_part();
 }
+
+/*/
+void Paint::print_fast()
+{
+    if (_image == NULL) {
+        ESP_LOGE(TAG, "Image is not set.");
+        return;
+    }
+
+    ESP_LOGI(TAG, "Printing canvas with fast refresh...");
+    
+    gpio_set_level(EPD_RES, 0);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    gpio_set_level(EPD_RES, 1);
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+    epd_spi_send_command(EPD_SW_RESET);
+    epd_wait_idle();
+
+    epd_spi_send_command(EPD_TEMPERATURE_SENSOR_CONTROL);
+    epd_spi_send_data(0x80);
+
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2);
+    epd_spi_send_data(0xB1);
+    epd_spi_send_command(EPD_MASTER_ACTIVATION);
+    epd_wait_idle();
+
+    epd_spi_send_command(EPD_TEMPERATURE_SENSOR_WRITE);
+    epd_spi_send_data(0x64);
+    epd_spi_send_data(0x00);
+
+    epd_spi_send_command(EPD_DISPLAY_UPDATE_COINTROL_2);
+    epd_spi_send_data(0x91);
+    epd_spi_send_command(EPD_MASTER_ACTIVATION);
+    epd_wait_idle();
+
+    set_rotate(ROTATE_180);
+    epd_spi_send_command(EPD_WRITE_RAM);
+    for (uint16_t j = 0; j < _height_byte; j++) {
+        for (uint16_t i = 0; i < _width_byte; i++) {
+            epd_spi_send_data(_image[i + j * _width_byte]);
+        }
+    }
+
+    epd_refresh_fast();
+    set_rotate(ROTATE_0);
+}
+//*/
 
 /**
  * @brief Set the image buffer

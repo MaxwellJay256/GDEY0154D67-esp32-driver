@@ -113,6 +113,7 @@ public:
     void clear(uint8_t color=IMAGE_BACKGROUND);
     void clear_area(WINDOW window, uint8_t color=IMAGE_BACKGROUND);
     void print_full();
+    // void print_fast(); // bug unfixed yet
     void print_part(WINDOW window);
 
     void set_image(uint8_t *image);
