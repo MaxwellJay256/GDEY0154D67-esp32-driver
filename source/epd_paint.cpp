@@ -158,7 +158,6 @@ void Paint::print_part(WINDOW window)
     unsigned int y_end1 = 0; // y_end 高 8 位
     unsigned int y_end2 = y_start2 + window.height - 1; // y_end 低 8 位
     
-    printf("window: (%d, %d) - (%d, %d)\n", window.x_start, window.y_start, x_end, y_end2);
     // 将 y_start 拆分成两个字节
     if (y_start2 >= 256) {
         y_start1 = y_start2 / 256;
@@ -186,14 +185,7 @@ void Paint::print_part(WINDOW window)
             epd_spi_send_data(_image[i + j * _width_byte]);
         }
     }
-    /*/
-    epd_spi_send_command(EPD_WRITE_RAM_RED);
-    for (uint16_t j = 0; j < _height_byte; j++) {
-        for (uint16_t i = 0; i < _width_byte; i++) {
-            epd_spi_send_data(_image[i + j * _width_byte]);
-        }
-    }
-    //*/
+
     epd_refresh_part();
 }
 
